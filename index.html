@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gold Loan Estimator · Concept by Gaurav Kumar</title>
+<meta name="description" content="A concept prototype by Gaurav Kumar: an accurate, explained gold loan estimate before a doorstep visit, with eligibility checks before a visit is booked.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+a{color:#8A6A12}a:hover{color:#6B520D}
+input::placeholder{color:#8C8372}
+@keyframes igspin{to{transform:rotate(360deg)}}
+:root{--ink:#1F1A12;--quiet:#6B6253;--accent:#8A6A12;--line:#E4DAC6;--ground:#F3EEE3;--card:#FFFFFF}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.5}
+.page{max-width:1000px;margin:0 auto;padding:32px 24px 48px}
+.intro{max-width:640px;margin-bottom:28px}
+.eyebrow{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--quiet);margin:0 0 6px}
+h1.page-title{font-size:32px;line-height:1.15;font-weight:700;margin:0 0 10px}
+.lead{font-size:17px;margin:0 0 8px}
+.note{font-size:13px;color:var(--quiet);margin:0}
+.layout{display:grid;grid-template-columns:390px minmax(0,1fr);gap:40px;align-items:start}
+.phone{width:390px;border-radius:28px;overflow:hidden;box-shadow:0 1px 2px rgba(31,26,18,.06),0 12px 40px rgba(31,26,18,.12);background:#FAF6EE}
+.side{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h2{font-size:16px;margin:0 0 10px}
+.card ol,.card ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.card p{margin:0 0 8px;font-size:15px}
+.card p:last-child{margin-bottom:0}
+.field{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.field label{font-size:14px;font-weight:500}
+.field select{height:48px;border:1px solid #C9A227;border-radius:8px;padding:0 12px;font:inherit;font-size:16px;color:var(--ink);background:#fff}
+.field .hint{font-size:13px;color:var(--quiet)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;background:#F6F0E2;padding:1px 5px;border-radius:4px}
+.foot{margin-top:40px;font-size:13px;color:var(--quiet)}
+@media (max-width:760px){
+  .page{padding:20px 12px 32px}
+  h1.page-title{font-size:26px}
+  .layout{grid-template-columns:minmax(0,1fr);gap:20px}
+  .phone{width:100%;max-width:390px;margin:0 auto;border-radius:20px}
+  #app > div{width:100% !important;height:min(844px,calc(100svh - 24px)) !important}
+  .side{display:contents}
+  .try{order:-1}
+}
+</style>
+</head>
+<body>
+<main class="page">
+<header class="intro">
+<p class="eyebrow">Concept prototype</p>
+<h1 class="page-title">Gold loan estimator</h1>
+<p class="lead">An accurate, explained loan estimate before a doorstep visit, and eligibility checks before a visit is booked, so fewer visits end without a loan.</p>
+<p class="note">By Gaurav Kumar · simulated data and checks · not affiliated with any lender</p>
+</header>
+
+<div class="layout">
+<div class="phone"><div id="app"></div></div>
+
+<div class="side">
+<section class="card try" aria-labelledby="try-h">
+<h2 id="try-h">Try it</h2>
+<ol>
+<li>Add your gold and see the estimate. Tap <strong>Loan details</strong> for the full working.</li>
+<li>Tap <strong>Book a free doorstep visit</strong>. Any 10-digit mobile number starting with 6 to 9 works, with any 6-digit code.</li>
+<li>Enter a personal PAN such as <code>ABCPK1234F</code>, allow the checks, and tap <strong>Check details</strong>.</li>
+</ol>
+<div class="field">
+<label for="demo-result">Check result to simulate</label>
+<select id="demo-result">
+<option value="Clear">Clear: pick a date and time</option>
+<option value="PAN not found">PAN not found</option>
+<option value="Wilful defaulter">Wilful defaulter</option>
+<option value="PEP">Politically exposed person</option>
+<option value="AML or sanctions match">Possible AML or sanctions match</option>
+</select>
+<span class="hint">Each result gets a different message, because the rules allow different things to be said.</span>
+</div>
+</section>
+
+<section class="card" aria-labelledby="idea-h">
+<h2 id="idea-h">The idea</h2>
+<p><strong>Problem.</strong> Doorstep gold-loan apps often show a best-case number before the visit, so the gap between what customers expect and what their gold supports only shows up at the door. A visit that ends without a loan still costs the full visit.</p>
+<p><strong>Hypothesis.</strong> If customers see an accurate, explained estimate and are checked before a slot is booked, the right customers book, and more doorstep visits end in a loan.</p>
+<p><strong>Test.</strong> Show the new journey to half of app users for four weeks. Main metric: share of visits that end in a loan. Also watch the booking rate, and how often the final amount lands within the estimate.</p>
+</section>
+
+<section class="card" aria-labelledby="rules-h">
+<h2 id="rules-h">Rules built in</h2>
+<ul>
+<li>Loan at 75% of gold value, below RBI's maximum, leaving a buffer if the gold price falls.</li>
+<li>Coins count up to 50 g and jewellery up to 1 kg; bars can't be pledged.</li>
+<li>Wilful defaulters are declined with the reason and how to dispute it.</li>
+<li>A possible AML or sanctions match gets a neutral call-back, with no reason given, to avoid tipping off.</li>
+<li>If a PAN can't be found, initial checks run on name, date of birth and mobile number. A red flag there leads to a call, never a decline, because a name match can be the wrong person.</li>
+</ul>
+</section>
+</div>
+</div>
+
+<p class="foot">Prototyped with Claude. Gold price, rates, codes, map and checks are simulated for illustration.</p>
+</main>
+
+<template id="estimator-template"><div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #FAF6EE; color: #1F1A12; font-family: 'DM Sans', system-ui, sans-serif; overflow: hidden">
+
+<div style="display: flex; align-items: center; gap: 8px; padding: 16px 12px 8px">
+<sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+<button aria-label="Back" onClick="{{ back }}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #1F1A12; cursor: pointer; padding: 0">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
+</button>
+</sc-if>
+<sc-if value="{{ noBack }}" hint-placeholder-val="{{ true }}">
+<div style="width: 4px; height: 44px"></div>
+</sc-if>
+<h1 style="margin: 0; font-size: 22px; font-weight: 500">{{ title }}</h1>
+</div>
+
+<sc-if value="{{ showSteps }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; justify-content: space-between; padding: 4px 16px 14px">
+<sc-for list="{{ steps }}" as="item" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 6px; width: {{ item.w }}">
+<div style="width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: {{ item.bg }}; color: {{ item.fg }}">{{ item.n }}</div>
+<div style="font-size: {{ item.fs }}; letter-spacing: {{ item.ls }}; text-transform: uppercase; text-align: center; color: {{ item.label }}">{{ item.name }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<div style="flex: 1; overflow-y: auto; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 16px">
+
+<sc-if value="{{ isEst }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Your gold</div>
+<sc-for list="{{ items }}" as="it" hint-placeholder-count="1">
+<div style="display: flex; flex-direction: column">
+<sc-if value="{{ it.collapsed }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 8px 8px 8px 14px; display: flex; align-items: center; gap: 8px">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 12px; color: #6B6253">{{ it.title }}</span>
+<span style="font-size: 14px; font-weight: 500; color: {{ it.summaryColor }}">{{ it.summary }}</span>
+</div>
+<button onClick="{{ it.edit }}" style="height: 44px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0 8px">Edit</button>
+<button onClick="{{ it.remove }}" aria-label="{{ it.removeLabel }}" style="width: 44px; height: 44px; border: 0; background: transparent; color: #6B6253; cursor: pointer; padding: 0; display: flex; align-items: center; justify-content: center">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M6 6l1 14h10l1-14"></path></svg>
+</button>
+</div>
+</sc-if>
+<sc-if value="{{ it.expanded }}" hint-placeholder-val="{{ true }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 18px">
+<sc-if value="{{ it.showTitle }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -6px 0 -8px">
+<span style="font-size: 14px; font-weight: 700">{{ it.title }}</span>
+<button onClick="{{ it.remove }}" style="height: 40px; border: 0; background: transparent; color: #6B6253; font: inherit; font-size: 14px; cursor: pointer; padding: 0 4px">Remove</button>
+</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 14px; font-weight: 500">What are you pledging?</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ it.formOpts }}" as="opt" hint-placeholder-count="3">
+<button onClick="{{ opt.pick }}" aria-pressed="{{ opt.pressed }}" style="height: 48px; border-radius: 8px; border: 1px solid {{ opt.bd }}; background: {{ opt.bg }}; color: {{ opt.fg }}; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{ opt.label }}</button>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{ it.notBar }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="{{ it.karatId }}" style="font-size: 14px; font-weight: 500">Karat</label>
+<select id="{{ it.karatId }}" value="{{ it.purity }}" onChange="{{ it.onPurity }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 12px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+<option value="" disabled="">Select karat</option>
+<option value="24">24K (999)</option>
+<option value="22">22K (916)</option>
+<option value="20">20K (833)</option>
+<option value="18">18K (750)</option>
+<option value="ns">Not sure</option>
+</select>
+<div style="font-size: 13px; color: #6B6253">Check the stamp: 999 = 24K, 916 = 22K, 833 = 20K, 750 = 18K.</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="{{ it.gramsId }}" style="font-size: 14px; font-weight: 500">Weight (grams)</label>
+<input id="{{ it.gramsId }}" type="number" placeholder="e.g. 40" value="{{ it.grams }}" onChange="{{ it.onGrams }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+
+<sc-if value="{{ it.isJewel }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 14px; font-weight: 500">Is that the gold weight alone?</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ it.stoneOpts }}" as="opt" hint-placeholder-count="2">
+<button onClick="{{ opt.pick }}" aria-pressed="{{ opt.pressed }}" style="height: 48px; border-radius: 8px; border: 1px solid {{ opt.bd }}; background: {{ opt.bg }}; color: {{ opt.fg }}; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{ opt.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ it.isBar }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 10px; align-items: flex-start; background: #EEF3FA; border: 1px solid #C6D4E8; border-radius: 10px; padding: 12px 14px; font-size: 14px; line-height: 1.45">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F5A8F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+<span>Bars and biscuits can't be pledged under RBI rules. You can pledge jewellery or coins.</span>
+</div>
+</sc-if>
+
+<sc-if value="{{ it.showDone }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ it.done }}" style="height: 44px; border: 1px solid #8A6A12; border-radius: 10px; background: transparent; color: #8A6A12; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Done</button>
+</sc-if>
+</div>
+</sc-if>
+</div>
+</sc-for>
+
+<button onClick="{{ addItem }}" disabled="{{ cantAdd }}" style="height: 48px; border: 1px dashed {{ addBd }}; border-radius: 12px; background: transparent; color: {{ addFg }}; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+<span>Add another item</span>
+</button>
+
+<sc-if value="{{ coinCapNote }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #9A5B00">Only 50 g of coins can be pledged per borrower, so coins are counted up to 50 g in total.</div>
+</sc-if>
+
+<sc-if value="{{ showNumber }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A6A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+<span>The final amount is set after we test your gold at home, in front of you.</span>
+</div>
+<button onClick="{{ toggleWhy }}" aria-expanded="{{ whyAria }}" style="display: flex; align-items: center; justify-content: space-between; height: 44px; border: 0; border-top: 1px solid #EFE8DA; background: transparent; padding: 0; font: inherit; font-size: 14px; font-weight: 700; color: #8A6A12; cursor: pointer; text-align: left">
+<span>Why might it change?</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{ chevRot }})"><path d="M6 9l6 6 6-6"></path></svg>
+</button>
+<sc-if value="{{ showWhy }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{ factors }}" as="item" hint-placeholder-count="4">
+<div style="padding: 10px 0; border-top: 1px solid #EFE8DA; display: flex; flex-direction: column; gap: 3px">
+<div style="font-size: 14px; font-weight: 700">{{ item.t }}</div>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.4">{{ item.d }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isDetails }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<span style="font-size: 14px; color: #6B6253">{{ summary }}</span>
+<button onClick="{{ toEst }}" style="height: 44px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0 4px">Edit</button>
+</div>
+
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">How we worked it out</div>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 0 14px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 500">Gold price for 22K</span><span style="font-size: 12px; color: #6B6253">sample price, {{ priceDate }}</span></span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ priceText }}</span>
+</div>
+<sc-for list="{{ calcRows }}" as="c" hint-placeholder-count="1">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 500">{{ c.t }}</span><span style="font-size: 12px; color: #6B6253; line-height: 1.4">{{ c.d }}</span></span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ c.v }}</span>
+</div>
+</sc-for>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="font-size: 14px; font-weight: 500">Value of your gold</span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ valueText }}</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 500">Loan-to-value (LTV)</span><span style="font-size: 12px; color: #6B6253; line-height: 1.4">{{ ltvNote }}</span></span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ ltvPct }}%</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0">
+<span style="font-size: 15px; font-weight: 700">Your loan</span>
+<span style="font-size: 17px; font-weight: 700; text-align: right; white-space: nowrap">{{ loanText }}</span>
+</div>
+</div>
+
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Repayment</div>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 0 14px">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 14px; font-weight: 500">Interest every 30 days</span><span style="font-size: 12px; color: #6B6253">at {{ ratePctText }} a month, a sample rate</span></span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ interestText }}</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid #EFE8DA">
+<span style="font-size: 14px; font-weight: 500">Tenure</span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">6 months</span>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 12px 0">
+<span style="font-size: 14px; font-weight: 500">Amount due at month 6</span>
+<span style="font-size: 15px; font-weight: 700; text-align: right; white-space: nowrap">{{ loanText }}</span>
+</div>
+</div>
+<div style="font-size: 12px; color: #6B6253; line-height: 1.45; margin-top: -6px">Paying interest on time gets a lower rate.</div>
+
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.4">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A6A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+<span>The final amount is set after we test your gold at home, in front of you.</span>
+</div>
+<button onClick="{{ toggleWhy }}" aria-expanded="{{ whyAria }}" style="display: flex; align-items: center; justify-content: space-between; height: 44px; border: 0; border-top: 1px solid #EFE8DA; background: transparent; padding: 0; font: inherit; font-size: 14px; font-weight: 700; color: #8A6A12; cursor: pointer; text-align: left">
+<span>Why might it change?</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{ chevRot }})"><path d="M6 9l6 6 6-6"></path></svg>
+</button>
+<sc-if value="{{ showWhy }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column">
+<sc-for list="{{ factors }}" as="item" hint-placeholder-count="4">
+<div style="padding: 10px 0; border-top: 1px solid #EFE8DA; display: flex; flex-direction: column; gap: 3px">
+<div style="font-size: 14px; font-weight: 700">{{ item.t }}</div>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.4">{{ item.d }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+
+<div style="font-size: 12px; color: #6B6253; line-height: 1.45">Your rate depends on the loan amount and paying on time, and is confirmed in the loan documents before you sign.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBook }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="background: #FFF3D6; border: 1px solid #E6CF8A; border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Your estimate</div>
+<div style="font-size: 22px; font-weight: 700">{{ loanText }}</div>
+<div style="font-size: 13px; color: #6B6253">{{ summary }}</div>
+</div>
+
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Pick a day</div>
+<div style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 0 16px 4px">
+<sc-for list="{{ dayOpts }}" as="item" hint-placeholder-count="7">
+<button onClick="{{ item.pick }}" aria-pressed="{{ item.pressed }}" style="flex: 0 0 64px; height: 76px; border-radius: 10px; border: 1px solid {{ item.bd }}; background: {{ item.bg }}; color: {{ item.fg }}; font: inherit; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0">
+<span style="font-size: 12px; color: {{ item.sub }}">{{ item.wd }}</span>
+<span style="font-size: 20px; font-weight: 700">{{ item.dn }}</span>
+<span style="font-size: 12px; color: {{ item.sub }}">{{ item.mo }}</span>
+</button>
+</sc-for>
+</div>
+
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Pick a 2-hour window</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ slotOpts }}" as="item" hint-placeholder-count="5">
+<button onClick="{{ item.pick }}" aria-pressed="{{ item.pressed }}" style="grid-column: {{ item.col }}; height: 48px; border-radius: 8px; border: 1px solid {{ item.bd }}; background: {{ item.bg }}; color: {{ item.fg }}; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">{{ item.label }}</button>
+</sc-for>
+</div>
+<sc-if value="{{ noSlotsToday }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253">No windows left today. Pick another day.</div>
+</sc-if>
+<sc-if value="{{ customSlot }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="ctime" style="font-size: 14px; font-weight: 500">Start time</label>
+<input id="ctime" type="time" value="{{ customTime }}" onChange="{{ onTime }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+<div style="font-size: 13px; color: #6B6253">{{ customTimeHelp }}</div>
+</div>
+</sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isAddr }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px">
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Pickup address</div>
+
+<sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ pickSaved }}" aria-pressed="{{ savedPressed }}" style="text-align: left; display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 12px; border: 1px solid {{ savedBd }}; background: {{ savedBg }}; font: inherit; color: #1F1A12; cursor: pointer">
+<span style="width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; border: 2px solid #8A6A12; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{ savedDot }}"></span></span>
+<span style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 14px; font-weight: 700">Saved address</span>
+<span style="font-size: 14px; color: #6B6253; line-height: 1.4">{{ savedText }}</span>
+</span>
+</button>
+</sc-if>
+<sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">or use a different address</div>
+</sc-if>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button onClick="{{ askLocation }}" aria-pressed="{{ locPressed }}" style="height: 48px; border-radius: 10px; border: 1px solid {{ locBd }}; background: {{ locBg }}; color: #1F1A12; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8A6A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3"></path><path d="M12 19v3"></path><path d="M2 12h3"></path><path d="M19 12h3"></path><circle cx="12" cy="12" r="7"></circle></svg>
+<span>Use my current location</span>
+</button>
+<button onClick="{{ goManual }}" aria-pressed="{{ manPressed }}" style="height: 48px; border-radius: 10px; border: 1px solid {{ manBd }}; background: {{ manBg }}; color: #1F1A12; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">Enter address manually</button>
+</div>
+
+<sc-if value="{{ isLocated }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; gap: 8px; align-items: flex-start">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E7D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M20 6L9 17l-5-5"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 700">Location found</span>
+<span style="font-size: 14px; color: #6B6253">{{ detectedText }}</span>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 14px; font-weight: 500">{{ mapTitle }}</div>
+<button onClick="{{ movePin }}" aria-label="Map: tap where your building is to move the pin" style="position: relative; display: block; width: 100%; height: 180px; padding: 0; border: 1px solid #DDD3C0; border-radius: 10px; overflow: hidden; background: #EFE9DD; cursor: crosshair">
+<svg width="100%" height="100%" viewBox="0 0 358 180" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; top: 0; left: 0">
+<rect x="0" y="0" width="358" height="180" fill="#EFE9DD"></rect>
+<rect x="10" y="8" width="72" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="8" width="108" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="8" width="96" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="10" y="80" width="72" height="40" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="80" width="108" height="40" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="80" width="96" height="40" rx="6" fill="#D5E6C8"></rect>
+<rect x="10" y="146" width="72" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="146" width="108" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="146" width="96" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="0" y="58" width="358" height="14" fill="#FFFFFF"></rect>
+<rect x="0" y="128" width="358" height="10" fill="#FFFFFF"></rect>
+<rect x="90" y="0" width="14" height="180" fill="#FFFFFF"></rect>
+<rect x="232" y="0" width="10" height="180" fill="#FFFFFF"></rect>
+</svg>
+<span style="position: absolute; left: {{ pinLeft }}; top: {{ pinTop }}; transform: translate(-50%, -100%); display: block; width: 28px; height: 36px; pointer-events: none">
+<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true"><path d="M14 35s12-11.5 12-21A12 12 0 0 0 2 14c0 9.5 12 21 12 21z" fill="#9A3B1F"></path><circle cx="14" cy="14" r="4.5" fill="#FFFFFF"></circle></svg>
+</span>
+</button>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45">Tap the map to move the pin to your building. Your loan manager will use this pin to reach you.</div>
+<sc-if value="{{ pinNotConfirmed }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ confirmPin }}" style="height: 44px; border: 1px solid #8A6A12; border-radius: 10px; background: transparent; color: #8A6A12; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Confirm this pin</button>
+</sc-if>
+<sc-if value="{{ pinConfirmedFlag }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #2E6B45"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg><span>Pin confirmed</span></div>
+</sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="lhouse" style="font-size: 14px; font-weight: 500">House or flat number</label>
+<input id="lhouse" type="text" value="{{ locHouse }}" onChange="{{ onLocHouse }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="lland" style="font-size: 14px; font-weight: 500">Landmark (optional)</label>
+<input id="lland" type="text" value="{{ locLandmark }}" onChange="{{ onLocLandmark }}" style="height: 48px; box-sizing: border-box; border: 1px solid #DDD3C0; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isManual }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px">
+<sc-if value="{{ denied }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; gap: 10px; align-items: flex-start; background: #EEF3FA; border: 1px solid #C6D4E8; border-radius: 10px; padding: 12px 14px; font-size: 14px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2F5A8F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5"></path><path d="M12 8h.01"></path></svg>
+<span>Location access wasn't allowed. Enter your address below.</span>
+</div>
+</sc-if>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mhouse" style="font-size: 14px; font-weight: 500">House or flat number</label>
+<input id="mhouse" type="text" value="{{ mHouse }}" onChange="{{ onMHouse }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="marea" style="font-size: 14px; font-weight: 500">Street and area</label>
+<input id="marea" type="text" value="{{ mArea }}" onChange="{{ onMArea }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mland" style="font-size: 14px; font-weight: 500">Landmark (optional)</label>
+<input id="mland" type="text" value="{{ mLandmark }}" onChange="{{ onMLandmark }}" style="height: 48px; box-sizing: border-box; border: 1px solid #DDD3C0; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mcity" style="font-size: 14px; font-weight: 500">City</label>
+<input id="mcity" type="text" value="{{ mCity }}" onChange="{{ onMCity }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF; min-width: 0">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="mpin" style="font-size: 14px; font-weight: 500">Pincode</label>
+<input id="mpin" type="text" value="{{ mPin }}" onChange="{{ onMPin }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF; min-width: 0">
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 14px; font-weight: 500">{{ mapTitle }}</div>
+<button onClick="{{ movePin }}" aria-label="Map: tap where your building is to move the pin" style="position: relative; display: block; width: 100%; height: 180px; padding: 0; border: 1px solid #DDD3C0; border-radius: 10px; overflow: hidden; background: #EFE9DD; cursor: crosshair">
+<svg width="100%" height="100%" viewBox="0 0 358 180" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; top: 0; left: 0">
+<rect x="0" y="0" width="358" height="180" fill="#EFE9DD"></rect>
+<rect x="10" y="8" width="72" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="8" width="108" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="8" width="96" height="42" rx="3" fill="#E3DACA"></rect>
+<rect x="10" y="80" width="72" height="40" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="80" width="108" height="40" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="80" width="96" height="40" rx="6" fill="#D5E6C8"></rect>
+<rect x="10" y="146" width="72" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="114" y="146" width="108" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="252" y="146" width="96" height="28" rx="3" fill="#E3DACA"></rect>
+<rect x="0" y="58" width="358" height="14" fill="#FFFFFF"></rect>
+<rect x="0" y="128" width="358" height="10" fill="#FFFFFF"></rect>
+<rect x="90" y="0" width="14" height="180" fill="#FFFFFF"></rect>
+<rect x="232" y="0" width="10" height="180" fill="#FFFFFF"></rect>
+</svg>
+<span style="position: absolute; left: {{ pinLeft }}; top: {{ pinTop }}; transform: translate(-50%, -100%); display: block; width: 28px; height: 36px; pointer-events: none">
+<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true"><path d="M14 35s12-11.5 12-21A12 12 0 0 0 2 14c0 9.5 12 21 12 21z" fill="#9A3B1F"></path><circle cx="14" cy="14" r="4.5" fill="#FFFFFF"></circle></svg>
+</span>
+</button>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45">Tap the map to move the pin to your building. Your loan manager will use this pin to reach you.</div>
+<sc-if value="{{ pinNotConfirmed }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ confirmPin }}" style="height: 44px; border: 1px solid #8A6A12; border-radius: 10px; background: transparent; color: #8A6A12; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Confirm this pin</button>
+</sc-if>
+<sc-if value="{{ pinConfirmedFlag }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #2E6B45"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg><span>Pin confirmed</span></div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ addrServed }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #2E6B45">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+<span>We visit this area ({{ addrPin }}).</span>
+</div>
+</sc-if>
+<sc-if value="{{ addrNotServed }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #9A3B1F">We don't visit {{ addrPin }} yet. We'll let you know when we do.</div>
+</sc-if>
+<button role="switch" aria-checked="{{ altAria }}" onClick="{{ toggleAlt }}" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; border: 0; border-top: 1px solid #EAE2D2; background: transparent; padding: 12px 0 0; font: inherit; color: #1F1A12; cursor: pointer; text-align: left">
+<span style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 500">Someone else will be at this address</span>
+<span style="font-size: 13px; color: #6B6253; line-height: 1.4">For example, if your gold is kept at a relative's home.</span>
+</span>
+<span style="position: relative; width: 44px; height: 26px; border-radius: 13px; flex-shrink: 0; background: {{ altTrack }}"><span style="position: absolute; top: 3px; left: {{ altKnob }}; width: 20px; height: 20px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3)"></span></span>
+</button>
+<sc-if value="{{ altOn }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="altname" style="font-size: 14px; font-weight: 500">Their name</label>
+<input id="altname" type="text" value="{{ altName }}" onChange="{{ onAltName }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="altphone" style="font-size: 14px; font-weight: 500">Their phone number</label>
+<input id="altphone" type="tel" value="{{ altPhone }}" onChange="{{ onAltPhone }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45">Our loan manager will call them to find the place. You still need to be there for the gold test and to sign.</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isVerify }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+
+<sc-if value="{{ vIsForm }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Before we offer a time, we run a few quick checks on the person taking the loan.</p>
+
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45; margin-top: -6px">The loan will be in your name, as the owner of the gold. You need to be at the visit.</div>
+
+<sc-if value="{{ vPanOnFile }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E7D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px"><path d="M20 6L9 17l-5-5"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 700">PAN on file</span>
+<span style="font-size: 13px; color: #6B6253">Name on PAN: {{ maskedName }}</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ vShowPan }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="pan" style="font-size: 14px; font-weight: 500">Your PAN</label>
+<input id="pan" type="text" autocomplete="off" autocapitalize="characters" maxlength="10" placeholder="e.g. ABCPK1234F" value="{{ pan }}" onChange="{{ onPan }}" style="height: 48px; box-sizing: border-box; border: 1px solid {{ panBd }}; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; letter-spacing: 1px; text-transform: uppercase; color: #1F1A12; background: #FFFFFF">
+<sc-if value="{{ panMsgOn }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #9A3B1F; line-height: 1.4">{{ panMsg }}</div>
+</sc-if>
+<sc-if value="{{ panFallbackOn }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; margin-top: 4px">
+<div style="font-size: 14px; line-height: 1.45">A very new PAN may not show up yet. You can still book: we’ll run initial checks on your name, date of birth and mobile number, and complete them with your PAN card at the visit.</div>
+<button onClick="{{ usePanFallback }}" style="height: 44px; border: 1px solid #8A6A12; border-radius: 10px; background: transparent; color: #8A6A12; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Continue with name and date of birth</button>
+</div>
+</sc-if>
+<button onClick="{{ toggleNoPan }}" style="align-self: flex-start; height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0">Don’t have a PAN?</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ vShowNoPan }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="font-size: 14px; line-height: 1.45">{{ noPanIntro }}</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="fname" style="font-size: 14px; font-weight: 500">Full name, as on Aadhaar</label>
+<input id="fname" type="text" value="{{ fName }}" onChange="{{ onFName }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="fdob" style="font-size: 14px; font-weight: 500">Date of birth</label>
+<input id="fdob" type="date" max="{{ maxDob }}" value="{{ fDob }}" onChange="{{ onFDob }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 16px; color: #1F1A12; background: #FFFFFF">
+<sc-if value="{{ underAge }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #9A3B1F">The person taking the loan must be 18 or older.</div>
+</sc-if>
+</div>
+<button onClick="{{ toggleNoPan }}" style="align-self: flex-start; height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0">{{ noPanBackLabel }}</button>
+</div>
+</sc-if>
+
+<button role="checkbox" aria-checked="{{ consentAria }}" onClick="{{ toggleConsent }}" style="display: flex; gap: 12px; align-items: flex-start; min-height: 44px; border: 0; background: transparent; padding: 4px 0; font: inherit; color: #1F1A12; cursor: pointer; text-align: left">
+<span style="width: 22px; height: 22px; box-sizing: border-box; border-radius: 6px; border: 2px solid {{ consentBd }}; background: {{ consentBg }}; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+</span>
+<span style="font-size: 14px; line-height: 1.45">{{ consentText }}</span>
+</button>
+<div style="border-top: 1px solid #EAE2D2; padding-top: 12px; display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45">{{ familyText }}</div>
+<div style="display: flex; flex-wrap: wrap; column-gap: 20px">
+<sc-if value="{{ canSwitch }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ switchNumber }}" style="height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0">Use their number</button>
+</sc-if>
+<button onClick="{{ toCall }}" style="height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0">Request a call</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ vIsChecking }}" hint-placeholder-val="{{ false }}">
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; margin-top: 8px">
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="display: block; width: 18px; height: 18px; box-sizing: border-box; border-radius: 50%; border: 2px solid #E6CF8A; border-top-color: #8A6A12; animation: igspin 0.8s linear infinite; flex-shrink: 0"></span>
+<span style="font-size: 16px; font-weight: 700">Checking details</span>
+</div>
+<sc-for list="{{ checkRows }}" as="c" hint-placeholder-count="3">
+<div style="font-size: 14px; color: #6B6253; padding-left: 28px">{{ c.t }}</div>
+</sc-for>
+<div style="font-size: 13px; color: #6B6253">This takes a few seconds.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ vIsClear }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+<div style="background: #EEF6F0; border: 1px solid #B9D8C3; border-radius: 12px; padding: 14px; display: flex; gap: 10px; align-items: flex-start">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E7D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 1px"><path d="M20 6L9 17l-5-5"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 15px; font-weight: 700">{{ clearTitle }}</span>
+<span style="font-size: 14px; color: #3D4A40; line-height: 1.4">{{ clearSub }}</span>
+</div>
+</div>
+<sc-if value="{{ showChangeId }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ changeId }}" style="align-self: flex-start; height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0">{{ changeIdLabel }}</button>
+</sc-if>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">{{ clearNext }}</p>
+</div>
+</sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ isHeld }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding-top: 24px">
+<h2 style="margin: 0; font-size: 24px; font-weight: 700">{{ heldTitle }}</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">{{ heldText }}</p>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 2px; font-size: 14px"><span style="color: #6B6253; font-size: 12px">{{ heldIdLabel }}</span><span style="font-weight: 700">{{ refId }}</span></div>
+<sc-if value="{{ heldShowSaved }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B6253">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+<span>Your estimate of {{ loanText }} is saved.</span>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ isCall }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding-top: 24px">
+<h2 style="margin: 0; font-size: 24px; font-weight: 700">We'll call you shortly</h2>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 2px; font-size: 14px"><span style="color: #6B6253; font-size: 12px">Request ID</span><span style="font-weight: 700">{{ refId }}</span></div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Our team will call you on +91 {{ phoneShown }}. Keep this ID handy.</p>
+</div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px; padding-top: 8px">
+<p style="margin: 0; font-size: 15px; line-height: 1.5">{{ loginIntro }}</p>
+<sc-if value="{{ isPhoneStage }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="phone" style="font-size: 14px; font-weight: 500">Mobile number</label>
+<div style="display: flex; align-items: center; gap: 8px; height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; background: #FFFFFF">
+<span style="font-size: 16px; color: #6B6253">+91</span>
+<input id="phone" type="tel" inputmode="numeric" placeholder="10-digit mobile number" value="{{ phone }}" onChange="{{ onPhone }}" style="flex: 1; min-width: 0; height: 44px; border: 0; outline: none; font: inherit; font-size: 16px; color: #1F1A12; background: transparent">
+</div>
+<div style="font-size: 13px; color: #6B6253">We'll send a one-time code to verify it.</div>
+<sc-if value="{{ loginFamily }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45; margin-top: 6px">Booking for a family member? Enter their mobile number. The loan will be in their name, and the code goes to their phone.</div>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ isOtpStage }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+<span style="font-size: 14px; color: #6B6253">Code sent to +91 {{ phoneShown }}</span>
+<button onClick="{{ changePhone }}" style="height: 40px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0 4px">Change</button>
+</div>
+<label for="otp" style="font-size: 14px; font-weight: 500">6-digit code</label>
+<input id="otp" type="tel" inputmode="numeric" placeholder="Enter code" value="{{ otp }}" onChange="{{ onOtp }}" style="height: 48px; box-sizing: border-box; border: 1px solid #C9A227; border-radius: 8px; padding: 0 14px; font: inherit; font-size: 18px; letter-spacing: 4px; color: #1F1A12; background: #FFFFFF">
+</div>
+</sc-if>
+<div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #6B6253">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2E7D4F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"></path></svg>
+<span>Your estimate of {{ loanText }} is saved.</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 14px; padding-top: 12px">
+<h2 style="margin: 0; font-size: 24px; font-weight: 700">Visit booked</h2>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #6B6253; font-size: 12px">Visit ID</span><span style="font-weight: 700">{{ refId }}</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #6B6253; font-size: 12px">When</span><span style="font-weight: 500">{{ dayLabel }}, {{ slotLabel }}</span></div>
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #6B6253; font-size: 12px">Where</span><span style="font-weight: 500; line-height: 1.4">{{ addressLine }}</span></div>
+<sc-if value="{{ altOn }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 2px"><span style="color: #6B6253; font-size: 12px">Contact at the address</span><span style="font-weight: 500">{{ altLine }}</span></div>
+</sc-if>
+</div>
+
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">What we'll test</div>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<sc-for list="{{ manifest }}" as="m" hint-placeholder-count="1">
+<div>{{ m.t }}</div>
+</sc-for>
+<div style="font-size: 13px; color: #6B6253; line-height: 1.45">Shared with your loan manager so they come prepared. Karat and weight are as you entered them; both are tested at the visit.</div>
+</div>
+<p style="margin: 0; font-size: 15px; line-height: 1.5">Your loan manager's name and number will be sent before the visit.</p>
+<div style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">Keep ready for the visit</div>
+<div style="background: #FFFFFF; border: 1px solid #EAE2D2; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; font-size: 14px">
+<sc-for list="{{ keepList }}" as="k" hint-placeholder-count="4">
+<div>{{ k.t }}</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<div style="padding: 12px 16px 14px; border-top: 1px solid #EAE2D2; background: #FAF6EE; display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{ isEst }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<sc-if value="{{ showNumber }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; padding-bottom: 4px">
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: #6B6253">{{ borrowLabel }}</span>
+<span style="font-size: 26px; font-weight: 700; line-height: 1.15">{{ loanText }}</span>
+<span style="font-size: 13px; color: #6B6253">Based on a sample gold price, {{ priceDate }}</span>
+<span style="font-size: 13px; color: #6B6253">Interest from about {{ interestFrom }} a month</span>
+</div>
+<sc-if value="{{ valid }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toDetails }}" style="height: 44px; border: 0; background: transparent; color: #8A6A12; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; padding: 0 4px; flex-shrink: 0">Loan details</button>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ invalid }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 14px; color: #6B6253; padding-bottom: 4px">{{ invalidMsg }}</div>
+</sc-if>
+<button onClick="{{ toBook }}" disabled="{{ invalid }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ estBtnBg }}; color: {{ estBtnFg }}">Book a free doorstep visit</button>
+<button onClick="{{ toCall }}" disabled="{{ invalid }}" style="height: 48px; border: 1px solid {{ callBd }}; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; background: transparent; color: {{ callFg }}">Request a call</button>
+</div>
+</sc-if>
+<sc-if value="{{ isDetails }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<button onClick="{{ toBook }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: #F2C66D; color: #1F1A12">Book a free doorstep visit</button>
+<button onClick="{{ toCall }}" style="height: 48px; border: 1px solid #8A6A12; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; background: transparent; color: #8A6A12">Request a call</button>
+</div>
+</sc-if>
+<sc-if value="{{ isBook }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ cantBook }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">{{ bookReason }}</div>
+</sc-if>
+<button onClick="{{ toAddr }}" disabled="{{ cantBook }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ bookBtnBg }}; color: {{ bookBtnFg }}">Continue to address</button>
+</sc-if>
+<sc-if value="{{ isVerify }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ vShowReason }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">{{ vReason }}</div>
+</sc-if>
+<button onClick="{{ vAction }}" disabled="{{ vCant }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ vBtnBg }}; color: {{ vBtnFg }}">{{ vBtnLabel }}</button>
+</sc-if>
+<sc-if value="{{ isAddr }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ noAddr }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">{{ addrReason }}</div>
+</sc-if>
+<button onClick="{{ toDone }}" disabled="{{ noAddr }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ addrBtnBg }}; color: {{ addrBtnFg }}">Confirm pickup</button>
+</sc-if>
+<sc-if value="{{ isPhoneStageLogin }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ phoneInvalid }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">Enter a 10-digit mobile number to continue.</div>
+</sc-if>
+<button onClick="{{ sendOtp }}" disabled="{{ phoneInvalid }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ otpBtnBg }}; color: {{ otpBtnFg }}">Send code</button>
+</sc-if>
+<sc-if value="{{ isOtpStageLogin }}" hint-placeholder-val="{{ false }}">
+<sc-if value="{{ otpInvalid }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 13px; color: #6B6253; text-align: center">Enter the 6-digit code to continue.</div>
+</sc-if>
+<button onClick="{{ verifyOtp }}" disabled="{{ otpInvalid }}" style="height: 52px; border: 0; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: {{ verifyBtnBg }}; color: {{ verifyBtnFg }}">Verify and continue</button>
+</sc-if>
+<sc-if value="{{ isEnd }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ restart }}" style="height: 52px; border: 1px solid #8A6A12; border-radius: 10px; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; background: transparent; color: #8A6A12">Start again</button>
+</sc-if>
+<div style="font-size: 11px; color: #6B6253; text-align: center">{{ footerText }}</div>
+</div>
+
+<sc-if value="{{ showPerm }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(31, 26, 18, 0.5); display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box">
+<div role="dialog" aria-modal="true" aria-labelledby="permTitle" style="width: 100%; background: #FFFFFF; border-radius: 16px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A6A12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+<h2 id="permTitle" style="margin: 0; font-size: 18px; font-weight: 700">Allow access to your location?</h2>
+<p style="margin: 0; font-size: 14px; color: #6B6253; line-height: 1.45">We use it only to fill in your pickup address. You can type the address instead.</p>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 4px">
+<button onClick="{{ allowLoc }}" style="height: 48px; border: 0; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; background: #F2C66D; color: #1F1A12">Allow</button>
+<button onClick="{{ denyLoc }}" style="height: 48px; border: 1px solid #8A6A12; border-radius: 10px; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer; background: transparent; color: #8A6A12">Don't allow</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div></template>
+
+<script>
+/* Minimal runtime for the estimator's templates: {{ holes }}, <sc-if>, <sc-for>,
+   event props and keyed DOM patching, so typing never loses focus. No dependencies. */
+(function () {
+  var HTML_NS = 'http://www.w3.org/1999/xhtml';
+  var SINGLE = /^\{\{\s*([\w.$]+)\s*\}\}$/;
+
+  function lookup(scope, path) {
+    var parts = path.split('.');
+    var v = scope;
+    for (var i = 0; i < parts.length; i++) {
+      if (v == null) return undefined;
+      v = v[parts[i]];
+    }
+    return v;
+  }
+  function interp(str, scope) {
+    return str.replace(/\{\{\s*([\w.$]+)\s*\}\}/g, function (_, p) {
+      var v = lookup(scope, p);
+      return v == null ? '' : String(v);
+    });
+  }
+  function raw(str, scope) {
+    var m = str.match(SINGLE);
+    return m ? lookup(scope, m[1]) : interp(str, scope);
+  }
+  function hasHole(str) { return str.indexOf('{{') > -1; }
+
+  function renderNodes(tplParent, scope, prefix) {
+    var out = [];
+    var kids = tplParent.childNodes;
+    for (var i = 0; i < kids.length; i++) {
+      var c = kids[i];
+      var key = prefix + '.' + i;
+      if (c.nodeType === 3) {
+        out.push({ t: 'text', key: key, text: hasHole(c.nodeValue) ? interp(c.nodeValue, scope) : c.nodeValue });
+        continue;
+      }
+      if (c.nodeType !== 1) continue;
+      var name = c.localName;
+      if (name === 'sc-if') {
+        if (raw(c.getAttribute('value') || '', scope)) out.push.apply(out, renderNodes(c, scope, key));
+        continue;
+      }
+      if (name === 'sc-for') {
+        var list = raw(c.getAttribute('list') || '', scope) || [];
+        var as = c.getAttribute('as') || 'item';
+        for (var j = 0; j < list.length; j++) {
+          var item = list[j];
+          var sc = Object.create(scope);
+          sc[as] = item;
+          var k = key + '[' + (item && item.key != null ? item.key : j) + ']';
+          out.push.apply(out, renderNodes(c, sc, k));
+        }
+        continue;
+      }
+      var vn = { t: 'el', tag: name, ns: c.namespaceURI, key: key, attrs: {}, props: {}, events: {}, children: null };
+      var attrs = c.attributes;
+      for (var a = 0; a < attrs.length; a++) {
+        var n = attrs[a].name, v = attrs[a].value;
+        if (n.indexOf('hint-') === 0) continue;
+        if (n.length > 2 && n.slice(0, 2).toLowerCase() === 'on') {
+          var ev = n.slice(2).toLowerCase();
+          if (ev === 'change' && name !== 'select') ev = 'input';
+          vn.events[ev] = raw(v, scope);
+          continue;
+        }
+        if (n === 'value' && (name === 'input' || name === 'select' || name === 'textarea')) {
+          var val = raw(v, scope);
+          vn.props.value = val == null ? '' : String(val);
+          continue;
+        }
+        if (hasHole(v)) {
+          var rv = raw(v, scope);
+          if (n === 'disabled' || n === 'checked') {
+            if (rv && rv !== 'false') vn.attrs[n] = '';
+            if (n === 'checked') vn.props.checked = !!(rv && rv !== 'false');
+            continue;
+          }
+          vn.attrs[n] = rv == null ? '' : String(rv);
+        } else {
+          vn.attrs[n] = v;
+        }
+      }
+      vn.children = renderNodes(c, scope, key);
+      out.push(vn);
+    }
+    return out;
+  }
+
+  function create(vn) {
+    if (vn.t === 'text') {
+      var tn = document.createTextNode(vn.text);
+      tn.__key = vn.key;
+      return tn;
+    }
+    var el = (vn.ns && vn.ns !== HTML_NS) ? document.createElementNS(vn.ns, vn.tag) : document.createElement(vn.tag);
+    el.__key = vn.key;
+    el.__h = {};
+    update(el, null, vn);
+    return el;
+  }
+
+  function update(el, old, vn) {
+    var oa = old ? old.attrs : {};
+    var k;
+    for (k in oa) if (!(k in vn.attrs)) el.removeAttribute(k);
+    for (k in vn.attrs) if (!old || oa[k] !== vn.attrs[k]) el.setAttribute(k, vn.attrs[k]);
+    var oe = old ? old.events : {};
+    for (k in oe) if (!(k in vn.events)) el.__h[k] = null;
+    for (k in vn.events) {
+      if (!(k in el.__h)) {
+        (function (type) {
+          el.addEventListener(type, function (e) {
+            var f = el.__h[type];
+            if (typeof f === 'function') f(e);
+          });
+        })(k);
+      }
+      el.__h[k] = vn.events[k];
+    }
+    patchChildren(el, old ? old.children : [], vn.children);
+    if ('value' in vn.props && el.value !== vn.props.value) el.value = vn.props.value;
+    if ('checked' in vn.props && el.checked !== vn.props.checked) el.checked = vn.props.checked;
+  }
+
+  function patchChildren(parent, oldKids, newKids) {
+    var oldMap = {};
+    var i;
+    for (i = 0; i < oldKids.length; i++) oldMap[oldKids[i].key] = oldKids[i];
+    var domOf = {};
+    var cur = parent.childNodes;
+    for (i = 0; i < cur.length; i++) if (cur[i].__key) domOf[cur[i].__key] = cur[i];
+    var result = [];
+    for (i = 0; i < newKids.length; i++) {
+      var nv = newKids[i];
+      var ov = oldMap[nv.key];
+      var dom = domOf[nv.key];
+      if (dom && ov && ov.t === nv.t && (nv.t === 'text' || ov.tag === nv.tag)) {
+        if (nv.t === 'text') { if (dom.nodeValue !== nv.text) dom.nodeValue = nv.text; }
+        else update(dom, ov, nv);
+      } else {
+        dom = create(nv);
+      }
+      result.push(dom);
+    }
+    var keep = new Set(result);
+    var snapshot = Array.prototype.slice.call(parent.childNodes);
+    for (i = 0; i < snapshot.length; i++) if (!keep.has(snapshot[i])) parent.removeChild(snapshot[i]);
+    for (i = 0; i < result.length; i++) {
+      var at = parent.childNodes[i];
+      if (at !== result[i]) parent.insertBefore(result[i], at || null);
+    }
+  }
+
+  function DCLogic(props) {
+    this.props = props || {};
+    this.state = {};
+  }
+  DCLogic.prototype.setState = function (patch) {
+    if (typeof patch === 'function') patch = patch(this.state, this.props);
+    this.state = Object.assign({}, this.state, patch);
+    if (this.__schedule) this.__schedule();
+  };
+
+  function mount(Component, tplEl, host, props) {
+    var comp = new Component(props);
+    var tplRoot = tplEl.content;
+    var prev = [];
+    var queued = false;
+    function render() {
+      queued = false;
+      var vals = comp.renderVals();
+      var next = renderNodes(tplRoot, vals, 'r');
+      patchChildren(host, prev, next);
+      prev = next;
+    }
+    comp.__schedule = function () {
+      if (queued) return;
+      queued = true;
+      Promise.resolve().then(render);
+    };
+    render();
+    return {
+      setProps: function (p) { Object.assign(comp.props, p); comp.__schedule(); },
+      component: comp
+    };
+  }
+
+  window.DCLogic = DCLogic;
+  window.DCMount = mount;
+})();
+
+</script>
+<script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      step: 'est', items: [{ key: 1, form: 'jewel', purity: '', grams: '', goldOnly: false }], openKey: 1, nextKey: 2, showWhy: false, from: 'est',
+      authed: false, next: '', otpStage: 'phone', phone: '', otp: '',
+      pin: '122002', day: '', slot: '', customDate: '', customTime: '',
+      addrMode: 'none', showPerm: false, denied: false, locGranted: false, altOn: false, altName: '', altPhone: '',
+      refId: 'GL-' + String(10000 + Math.floor(Math.random() * 90000)),
+      pinX: 50, pinY: 55, pinConfirmed: false,
+      locHouse: '', locLandmark: '', mHouse: '', mArea: '', mLandmark: '', mCity: '', mPin: '',
+      vStage: 'form', vRun: 0, verified: false, held: false, pan: '', panError: false, consent: false,
+      noPan: false, panFallback: false, fName: '', fDob: ''
+    };
+  }
+  inr(n) {
+    return '₹' + Math.floor(n).toLocaleString('en-IN');
+  }
+  amt(n, mode) {
+    if (n >= 100000) {
+      var l = n / 100000;
+      l = mode === 'round' ? Math.round(l * 100) / 100 : Math.floor(l * 100) / 100;
+      return l.toFixed(2) + ' lakh';
+    }
+    var t = mode === 'round' ? Math.round(n / 1000) * 1000 : Math.floor(n / 1000) * 1000;
+    return t.toLocaleString('en-IN');
+  }
+  rng(a, b, mode) {
+    var A = this.amt(a, mode), B = this.amt(b, mode);
+    if (A === B) return '₹' + B;
+    if (A.indexOf('lakh') > -1 && B.indexOf('lakh') > -1) return '₹' + A.replace(' lakh', '') + ' – ' + B;
+    return '₹' + A + ' – ₹' + B;
+  }
+  hundreds(n) {
+    return '₹' + (Math.floor(n / 100) * 100).toLocaleString('en-IN');
+  }
+  sel(on) {
+    return on
+      ? { bg: '#8A6A12', bd: '#8A6A12', fg: '#FFFFFF', sub: '#FFFFFF', pressed: 'true' }
+      : { bg: '#FFFFFF', bd: '#DDD3C0', fg: '#1F1A12', sub: '#6B6253', pressed: 'false' };
+  }
+  span(a, b) {
+    return Math.floor(a) === Math.floor(b) ? this.inr(b) : this.inr(a) + ' – ' + this.inr(b);
+  }
+  cap(v) {
+    var a = Math.min(0.85 * v, 250000);
+    var b = 0.8 * v > 250000 ? Math.min(0.8 * v, 500000) : 0;
+    var c = 0.75 * v > 500000 ? 0.75 * v : 0;
+    return Math.max(a, b, c);
+  }
+  chip(on) {
+    return on ? { bg: '#FFF3D6', bd: '#8A6A12', pressed: 'true' } : { bg: '#FFFFFF', bd: '#DDD3C0', pressed: 'false' };
+  }
+  pad(n) {
+    return (n < 10 ? '0' : '') + n;
+  }
+  fmtTime(h, m) {
+    var ap = h >= 12 ? 'pm' : 'am';
+    var hh = h % 12 || 12;
+    return hh + (m ? ':' + this.pad(m) : '') + ' ' + ap;
+  }
+  fmtDate(v) {
+    var d = new Date(v + 'T00:00:00');
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' });
+  }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var rate = this.props.rate22 ?? 12981;
+    var priceDate = this.props.priceDate ?? '27 Oct';
+    var rbiMode = (this.props.ltvMode ?? '75% of value') === 'RBI maximum';
+    var self2 = this;
+    function capV(v) { return rbiMode ? self2.cap(v) : 0.75 * v; }
+    var ratePct = this.props.ratePct ?? 0.8;
+    var r = ratePct / 100;
+    var propLoggedIn = this.props.loggedIn ?? false;
+    var hasSaved = propLoggedIn;
+    var isAuthed = s.authed || propLoggedIn;
+    var serviceable = this.props.serviceable ?? true;
+    var gated = (this.props.journey ?? 'Standard') === 'Verify first';
+
+    var fine = { '24': 0.999, '22': 0.916, '20': 0.833, '18': 0.75 };
+    var kLabels = { '24': '24K', '22': '22K', '20': '20K', '18': '18K', 'ns': 'karat not sure' };
+    var items = s.items;
+    var multi = items.length > 1;
+    var openKey = multi ? s.openKey : items[0].key;
+    function setItem(key, patch) {
+      self.setState({ items: items.map(function (x) { return x.key === key ? Object.assign({}, x, patch) : x; }) });
+    }
+    var coinLeft = 50, coinTotal = 0, jewelTotal = 0, totalGrams = 0;
+    var vLo = 0, vHi = 0, nComplete = 0, firstIssue = '', hasBar = false;
+    var anyNs = false, anyJewel = false, anyStones = false, nsCoin = false, nsJewel = false;
+    var manifest = [];
+    var calcRows = [];
+    function perGram(p) { return '₹' + Math.round(rate * p / 0.916).toLocaleString('en-IN') + '/g'; }
+    var itemViews = items.map(function (it, idx) {
+      var title = 'Item ' + (idx + 1);
+      var g0 = parseFloat(it.grams) || 0;
+      var isCoin = it.form === 'coin', isBar = it.form === 'bar', isJewel = it.form === 'jewel';
+      var issue = '';
+      if (isBar) issue = 'bar';
+      else if (!it.purity && !(g0 > 0)) issue = 'select the karat and enter the weight';
+      else if (!it.purity) issue = 'select the karat';
+      else if (!(g0 > 0)) issue = 'enter the weight';
+      var complete = issue === '';
+      var summaryText;
+      if (complete) {
+        nComplete++;
+        var g = g0;
+        if (isCoin) { coinTotal += g0; g = Math.min(g0, coinLeft); coinLeft -= g; }
+        else { jewelTotal += g0; anyJewel = true; if (!it.goldOnly) anyStones = true; }
+        totalGrams += g0;
+        var pHi, pLo;
+        if (it.purity === 'ns') {
+          anyNs = true; if (isCoin) nsCoin = true; else nsJewel = true;
+          pHi = isCoin ? 0.999 : 0.916; pLo = isCoin ? 0.916 : 0.75;
+        } else { pHi = fine[it.purity]; pLo = fine[it.purity]; }
+        var noDeduct = isCoin || it.goldOnly;
+        var iLo = g * (noDeduct ? 1.0 : 0.80) * rate * pLo / 0.916;
+        var iHi = g * (noDeduct ? 1.0 : 0.95) * rate * pHi / 0.916;
+        vLo += iLo; vHi += iHi;
+        var priceDesc = it.purity === 'ns'
+          ? perGram(pLo) + ' to ' + perGram(pHi) + (isCoin ? ' (22K to 24K)' : ' (18K to 22K)')
+          : perGram(pHi) + ' for ' + kLabels[it.purity];
+        calcRows.push({
+          t: (isCoin ? 'Coins' : 'Jewellery') + ', ' + g0 + ' g' + (isCoin && g < g0 ? ' (counted as ' + g + ' g)' : ''),
+          d: '× ' + priceDesc + (noDeduct ? '' : ', less 5–20% for stones and other materials'),
+          v: self.rng(iLo, iHi, 'round')
+        });
+        summaryText = (isCoin ? 'Coins' : 'Jewellery') + ' · ' + kLabels[it.purity] + ' · ' + g0 + ' g' + (isJewel ? ' · ' + (it.goldOnly ? 'gold only' : 'includes stones') : '');
+        manifest.push({ t: summaryText });
+      } else {
+        if (isBar) hasBar = true;
+        else if (!firstIssue) firstIssue = (multi ? title + ': ' : '') + issue;
+        summaryText = isBar ? 'Bars · can’t be pledged' : 'Not finished: ' + issue;
+      }
+      var expanded = it.key === openKey;
+      var formOpts = [['jewel', 'Jewellery'], ['coin', 'Coins'], ['bar', 'Bars']].map(function (x) {
+        var c = self.sel(it.form === x[0]);
+        return { label: x[1], bg: c.bg, bd: c.bd, fg: c.fg, pressed: c.pressed, pick: function () { setItem(it.key, { form: x[0] }); } };
+      });
+      var stoneOpts = [['gold', 'Gold only'], ['stones', 'Includes stones']].map(function (x) {
+        var c = self.sel((x[0] === 'gold') === it.goldOnly);
+        return { label: x[1], bg: c.bg, bd: c.bd, fg: c.fg, pressed: c.pressed, pick: function () { setItem(it.key, { goldOnly: x[0] === 'gold' }); } };
+      });
+      return {
+        key: it.key, title: title, showTitle: multi,
+        expanded: expanded, collapsed: !expanded,
+        summary: summaryText, summaryColor: complete ? '#1F1A12' : '#9A3B1F',
+        formOpts: formOpts, stoneOpts: stoneOpts,
+        isJewel: isJewel, isBar: isBar, notBar: !isBar,
+        purity: it.purity, grams: it.grams,
+        karatId: 'karat-' + it.key, gramsId: 'grams-' + it.key,
+        removeLabel: 'Remove ' + title.toLowerCase(),
+        onPurity: function (e) { setItem(it.key, { purity: e.target.value }); },
+        onGrams: function (e) { setItem(it.key, { grams: e.target.value }); },
+        edit: function () { self.setState({ openKey: it.key }); },
+        done: function () { self.setState({ openKey: 0 }); },
+        showDone: multi && complete,
+        remove: function () {
+          var rest = items.filter(function (x) { return x.key !== it.key; });
+          if (!rest.length) return;
+          self.setState({ items: rest, openKey: s.openKey === it.key ? 0 : s.openKey });
+        }
+      };
+    });
+    var lo = Math.floor(capV(vLo));
+    var hi = Math.floor(capV(vHi));
+    var invalidMsg = '';
+    if (hasBar) invalidMsg = 'Bars can’t be pledged. Remove that item or change it to jewellery or coins.';
+    else if (jewelTotal > 1000) invalidMsg = 'RBI allows up to 1 kg of jewellery per borrower.';
+    else if (firstIssue) invalidMsg = firstIssue.charAt(0).toUpperCase() + firstIssue.slice(1) + (nComplete > 0 ? ', or remove it.' : ' to see your loan amount.');
+    var valid = invalidMsg === '' && nComplete > 0;
+    var showNumber = nComplete > 0 && jewelTotal <= 1000;
+    var cantAdd = !!firstIssue || hasBar || items.length >= 10;
+    var ltvPct = rbiMode ? (hi <= 250000 ? 85 : (hi <= 500000 ? 80 : 75)) : 75;
+    var ltvNote = rbiMode ? 'The most RBI allows for this loan size' : 'Share of your gold’s value you can borrow';
+    var summary = (items.length === 1 && nComplete === 1)
+      ? itemViews[0].summary
+      : nComplete + (nComplete === 1 ? ' item' : ' items') + ' · ' + totalGrams + ' g in total';
+
+    var titles = { est: 'Loan amount estimator', details: 'Loan details', login: 'Log in', call: 'Loan amount estimator', verify: 'Book a home visit', held: 'Book a home visit', book: 'Book a home visit', addr: 'Book a home visit', done: 'Book a home visit' };
+    var stepNames = gated ? ['Estimate', 'Verify', 'Date & time', 'Address'] : ['Estimate', 'Date & time', 'Address'];
+    var stepIdx = gated
+      ? (s.step === 'verify' ? 1 : (s.step === 'book' ? 2 : (s.step === 'addr' ? 3 : 0)))
+      : (s.step === 'book' ? 1 : (s.step === 'addr' ? 2 : 0));
+    var steps = stepNames.map(function (x, i) {
+      var on = i === stepIdx, done = i < stepIdx;
+      return { n: done ? '✓' : String(i + 1), name: x, bg: (on || done) ? '#8A6A12' : '#EFE8DA', fg: (on || done) ? '#FFFFFF' : '#6B6253', label: on ? '#1F1A12' : '#6B6253', w: gated ? '84px' : '100px', fs: gated ? '11px' : '12px', ls: gated ? '0.4px' : '0.8px' };
+    });
+
+    var karatText;
+    if (!anyNs) karatText = multi ? 'Each item is valued at the rate for its karat.' : 'Your gold is valued at the rate for its karat.';
+    else if (nsJewel && nsCoin) karatText = 'Where you’re not sure, we show 18K to 22K for jewellery and 22K to 24K for coins. The test at your home settles it.';
+    else if (nsCoin) karatText = 'Not sure, so we show 22K to 24K for coins. The test at your home settles it.';
+    else karatText = 'Not sure, so we show 18K to 22K for jewellery. The test at your home settles it.';
+    var factors = [{ t: 'Karat', d: karatText }];
+    if (anyJewel) {
+      factors.push({ t: 'Stones and hooks', d: anyStones
+        ? 'Where the weight includes stones and other materials, they’re deducted. This range assumes 5% to 20% of that weight.'
+        : 'Your weight excludes stones and other materials. Small deductions for hooks and solder can still apply at the test.' });
+    }
+    factors.push({ t: 'Loan size', d: rbiMode ? 'RBI caps your total loan at 85% of gold value up to ₹2.5 lakh, 80% up to ₹5 lakh, and 75% above that.' : 'This estimate lends 75% of your gold’s value, within RBI’s limits (85% up to ₹2.5 lakh, 80% up to ₹5 lakh, 75% above).' });
+    factors.push({ t: 'Gold price', d: 'Valued at ' + this.inr(rate) + '/g for 22K, a sample price for ' + priceDate + '. The price on your visit day applies.' });
+
+    var pinOk = /^\d{6}$/.test(String(s.pin).trim());
+    var now = new Date();
+    var minDate = now.getFullYear() + '-' + this.pad(now.getMonth() + 1) + '-' + this.pad(now.getDate());
+    var nowMins = now.getHours() * 60 + now.getMinutes();
+    var lead = 60;
+    var presets = [['p10', 10, '10 am – 12 pm'], ['p12', 12, '12 – 2 pm'], ['p14', 14, '2 – 4 pm'], ['p16', 16, '4 – 6 pm']];
+    var todayOpen = presets.filter(function (p) { return p[1] * 60 >= nowMins + lead; });
+    var showToday = todayOpen.length > 0;
+    var customDateLabel = s.customDate ? this.fmtDate(s.customDate) : '';
+    var customMins = -1, customSlotLabel = '';
+    if (s.customTime) {
+      var parts = String(s.customTime).split(':');
+      var h = parseInt(parts[0], 10), m = parseInt(parts[1], 10) || 0;
+      if (!isNaN(h)) { customMins = h * 60 + m; customSlotLabel = this.fmtTime(h, m) + ' – ' + this.fmtTime((h + 2) % 24, m); }
+    }
+    var dayDefs = [];
+    var startOff = showToday ? 0 : 1;
+    for (var di = startOff; di < startOff + 7; di++) {
+      var dd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + di);
+      var iso = dd.getFullYear() + '-' + this.pad(dd.getMonth() + 1) + '-' + this.pad(dd.getDate());
+      dayDefs.push({
+        iso: iso,
+        wd: di === 0 ? 'Today' : dd.toLocaleDateString('en-IN', { weekday: 'short' }),
+        dn: String(dd.getDate()),
+        mo: dd.toLocaleDateString('en-IN', { month: 'short' })
+      });
+    }
+    var dayValid = dayDefs.some(function (d) { return d.iso === s.day; });
+    var isTodaySel = dayValid && s.day === minDate;
+    var dayOpts = dayDefs.map(function (d) {
+      var c = self.sel(s.day === d.iso);
+      return { wd: d.wd, dn: d.dn, mo: d.mo, bg: c.bg, bd: c.bd, fg: c.fg, sub: c.sub, pressed: c.pressed, pick: function () { self.setState({ day: d.iso }); } };
+    });
+    var openPresets = isTodaySel ? todayOpen : presets;
+    var noSlotsToday = isTodaySel && todayOpen.length === 0;
+    var presetValid = openPresets.some(function (p) { return p[0] === s.slot; });
+    var customTooSoon = isTodaySel && customMins >= 0 && customMins < nowMins + lead;
+    var slotValid = presetValid || (s.slot === 'custom' && customMins >= 0 && !customTooSoon);
+    var slotDefs = openPresets.map(function (p) { return [p[0], p[2]]; }).concat([['custom', customSlotLabel || 'Pick a time']]);
+    var slotOpts = slotDefs.map(function (d) {
+      var c = self.sel(s.slot === d[0] && (d[0] === 'custom' || presetValid));
+      return { label: d[1], bg: c.bg, bd: c.bd, fg: c.fg, pressed: c.pressed, col: (d[0] === 'custom' && slotDefs.length % 2 === 1) ? '1 / -1' : 'auto', pick: function () { self.setState({ slot: d[0] }); } };
+    });
+    var dayLabel = dayValid ? this.fmtDate(s.day) : '';
+    var slotLabel = '';
+    if (slotValid) {
+      if (s.slot === 'custom') slotLabel = customSlotLabel;
+      else slotLabel = presets.filter(function (p) { return p[0] === s.slot; })[0][2];
+    }
+    var customHelp = customTooSoon
+      ? 'Pick a start time at least an hour from now.'
+      : (customSlotLabel ? 'Your window: ' + customSlotLabel : 'Pick a start time; the visit window runs two hours from it.');
+    var cantBook = !dayLabel || !slotLabel;
+    var bookReason = !dayLabel ? 'Pick a day to continue.' : (!slotLabel ? 'Pick a time window to continue.' : '');
+
+    var savedText = 'House 21, Sample Street, Sector 45, Gurugram 122002';
+    var detectedText = 'Sector 44, Gurugram ' + s.pin;
+    var addrMode = s.addrMode;
+    var addressLine = '';
+    var addrValid = false;
+    if (addrMode === 'saved' && hasSaved) { addrValid = true; addressLine = savedText; }
+    if (addrMode === 'located') {
+      addrValid = String(s.locHouse).trim() !== '' && s.pinConfirmed;
+      addressLine = [s.locHouse, s.locLandmark, detectedText].map(function (x) { return String(x).trim(); }).filter(Boolean).join(', ');
+    }
+    if (addrMode === 'manual') {
+      addrValid = String(s.mHouse).trim() !== '' && String(s.mArea).trim() !== '' && String(s.mCity).trim() !== '' && /^\d{6}$/.test(String(s.mPin).trim()) && s.pinConfirmed;
+      addressLine = [s.mHouse, s.mArea, s.mLandmark, (String(s.mCity).trim() + ' ' + String(s.mPin).trim())].map(function (x) { return String(x).trim(); }).filter(Boolean).join(', ');
+    }
+    var altDigits = String(s.altPhone).replace(/\D/g, '');
+    if (altDigits.length === 12 && altDigits.indexOf('91') === 0) altDigits = altDigits.slice(2);
+    var altOk = !s.altOn || (String(s.altName).trim() !== '' && altDigits.length === 10);
+    addrValid = addrValid && altOk;
+    var addrPin = addrMode === 'saved' ? '122002' : (addrMode === 'located' ? String(s.pin) : (addrMode === 'manual' ? String(s.mPin).trim() : ''));
+    var addrPinOk = /^\d{6}$/.test(addrPin);
+    var addrServed = addrMode !== 'none' && addrPinOk && serviceable;
+    var addrNotServed = addrMode !== 'none' && addrPinOk && !serviceable;
+    addrValid = addrValid && !addrNotServed;
+    var mFieldsOk = String(s.mHouse).trim() !== '' && String(s.mArea).trim() !== '' && String(s.mCity).trim() !== '' && /^\d{6}$/.test(String(s.mPin).trim());
+    var addrReason = '';
+    if (addrMode === 'none' || (addrMode === 'saved' && !hasSaved)) addrReason = hasSaved ? 'Choose an address to continue.' : 'Add your address to continue.';
+    else if (addrMode === 'located') addrReason = !String(s.locHouse).trim() ? 'Add your house or flat number to continue.' : (!s.pinConfirmed ? 'Confirm the pin to continue.' : '');
+    else if (addrMode === 'manual') addrReason = !mFieldsOk ? 'Fill in house, area, city and pincode to continue.' : (!s.pinConfirmed ? 'Confirm the pin to continue.' : '');
+    if (!addrReason && !altOk) addrReason = 'Add their name and a 10-digit phone number to continue.';
+    if (addrNotServed) addrReason = 'We don’t visit this pincode yet.';
+    var sv = this.chip(addrMode === 'saved');
+    var lc = this.chip(addrMode === 'located');
+    var mc = this.chip(addrMode === 'manual');
+
+    function field(name) { return function (e) { var o = {}; o[name] = e.target.value; self.setState(o); }; }
+    var phoneDigits = String(s.phone).replace(/\D/g, '');
+    if (phoneDigits.length === 12 && phoneDigits.indexOf('91') === 0) phoneDigits = phoneDigits.slice(2);
+    var phoneOk = /^[6-9]\d{9}$/.test(phoneDigits);
+    var otpOk = /^\d{6}$/.test(String(s.otp).trim());
+    var phoneShown = s.authed && phoneOk ? phoneDigits.slice(0, 5) + ' ' + phoneDigits.slice(5) : (phoneOk ? phoneDigits.slice(0, 5) + ' ' + phoneDigits.slice(5) : '98765 43210');
+    var isLoginStep = s.step === 'login';
+
+    // Verify step: PAN (or name and date of birth, with Form 60 at the visit), consent, then checks before any slot is offered.
+    var panOnFile = gated && propLoggedIn;
+    var noPan = !!s.noPan && !panOnFile;
+    // PAN can't be found (new, inactive or unlinked): checks run on name and date of birth, and the PAN card is checked at the visit.
+    var panFallback = noPan && !!s.panFallback;
+    var panU = String(s.pan).toUpperCase().replace(/\s/g, '');
+    var panFmt = /^[A-Z]{5}\d{4}[A-Z]$/.test(panU);
+    var panPersonal = panFmt && panU.charAt(3) === 'P';
+    var fNameOk = String(s.fName).trim() !== '';
+    var dobOk = /^\d{4}-\d{2}-\d{2}$/.test(String(s.fDob));
+    var adult = false;
+    if (dobOk) {
+      var dp = String(s.fDob).split('-');
+      var by = parseInt(dp[0], 10), bmo = parseInt(dp[1], 10), bdy = parseInt(dp[2], 10);
+      var age = now.getFullYear() - by - ((now.getMonth() + 1 < bmo || (now.getMonth() + 1 === bmo && now.getDate() < bdy)) ? 1 : 0);
+      adult = age >= 18 && age < 120;
+    }
+    var maxDob = (now.getFullYear() - 18) + '-' + this.pad(now.getMonth() + 1) + '-' + this.pad(now.getDate());
+    var vStage = s.vStage || 'form';
+    var idOk = panOnFile || (noPan ? (fNameOk && dobOk && adult) : panPersonal);
+    var maskedName = 'G**** K****';
+    function runChecks() {
+      var token = (s.vRun || 0) + 1;
+      self.setState({ vStage: 'checking', vRun: token, panError: false });
+      setTimeout(function () {
+        var cur = self.state;
+        if (!cur || cur.vRun !== token || cur.vStage !== 'checking' || cur.step !== 'verify') return;
+        var res = self.props.screening ?? 'Clear';
+        // Wilful defaulter: declined with the reason (any loan size). PEP: extra check and senior approval before a slot.
+        // AML or sanctions match: neutral hold, no reason (telling them would be tipping off).
+        var hold = { 'Wilful defaulter': 'wd', 'PEP': 'pep', 'AML or sanctions match': 'aml', 'Needs review': 'aml' }[res];
+        // Without a PAN, a match on name, date of birth and mobile can be the wrong person: review it on a call, never decline.
+        if (hold && panFallback) hold = 'aml';
+        if (res === 'PAN not found' && !noPan && !panOnFile) self.setState({ vStage: 'form', panError: true });
+        else if (hold) self.setState({ vStage: 'form', held: hold, step: 'held' });
+        else self.setState({ vStage: 'clear', verified: true });
+      }, 1800);
+    }
+    var vReady = false, vLabel = 'Check details', vReason = '', vAct = function () {};
+    if (vStage === 'checking') {
+      vLabel = 'Checking…';
+    } else if (vStage === 'clear') {
+      vReady = true; vLabel = 'Pick a date and time';
+      vAct = function () { self.setState({ step: 'book' }); };
+    } else {
+      if (!idOk) {
+        if (noPan) vReason = !fNameOk ? 'Add your full name to continue.' : (!dobOk ? 'Add your date of birth to continue.' : 'Check the date of birth to continue.');
+        else vReason = !panFmt ? 'Enter your 10-character PAN to continue.' : 'Enter a personal PAN to continue.';
+      } else if (!s.consent) vReason = 'Tick the box to allow the checks.';
+      vReady = idOk && !!s.consent;
+      vAct = function () { if (vReady) runChecks(); };
+    }
+    var panMsg = s.panError ? 'Please recheck the PAN number and retry.' :((panFmt && !panPersonal) ? 'This isn’t a personal PAN. The 4th letter of a personal PAN is P.' : '');
+    var idLine = !gated ? 'PAN card, or Form 60' : (noPan ? (panFallback ? 'PAN card: we’ll complete your checks with it' : 'Form 60, filled in') : 'PAN card');
+    var keepList = [
+      { t: idLine },
+      { t: 'Aadhaar or another photo ID' },
+      { t: 'The gold you want to pledge' },
+      { t: 'Your bank account details, in your name: the loan is paid into your account' }
+    ];
+    if (valid && hi > 250000) keepList.push({ t: 'Income proof or a bank statement: RBI requires a repayment check on loans above ₹2.5 lakh' });
+
+    function proceed(target) {
+      if (!valid) return;
+      var from = s.step === 'details' ? 'details' : 'est';
+      var t = target;
+      if (target === 'book' && gated) t = s.held ? 'held' : (s.verified ? 'book' : 'verify');
+      if (isAuthed) self.setState({ step: t, from: from });
+      else self.setState({ step: 'login', from: from, next: t, otpStage: 'phone', otp: '' });
+    }
+
+    return {
+      title: titles[s.step],
+      showSteps: s.step === 'est' || s.step === 'details' || s.step === 'verify' || s.step === 'book' || s.step === 'addr',
+      showBack: s.step !== 'est', noBack: s.step === 'est',
+      steps: steps,
+      isEst: s.step === 'est',
+      isDetails: s.step === 'details',
+      isBook: s.step === 'book',
+      isAddr: s.step === 'addr',
+      isCall: s.step === 'call',
+      isDone: s.step === 'done',
+      isEnd: s.step === 'call' || s.step === 'done' || s.step === 'held',
+      isVerify: s.step === 'verify',
+      isHeld: s.step === 'held',
+      vIsForm: vStage === 'form', vIsChecking: vStage === 'checking', vIsClear: vStage === 'clear',
+      vPanOnFile: panOnFile,
+      vShowPan: !panOnFile && !noPan,
+      vShowNoPan: noPan,
+      pan: s.pan,
+      onPan: function (e) { self.setState({ pan: String(e.target.value).toUpperCase(), panError: false }); },
+      panMsgOn: panMsg !== '', panMsg: panMsg, panBd: panMsg ? '#9A3B1F' : '#C9A227',
+      toggleNoPan: function () { self.setState({ noPan: !s.noPan, panFallback: false, panError: false }); },
+      panFallbackOn: !!s.panError && !noPan && !panOnFile,
+      usePanFallback: function () { self.setState({ noPan: true, panFallback: true, panError: false }); },
+      noPanIntro: panFallback
+        ? 'Add your name and date of birth. With your verified mobile number, we’ll run initial checks now and complete them with your PAN card at the visit.'
+        : 'Bring a filled Form 60 to the visit instead. To run our checks now, add your name and date of birth.',
+      noPanBackLabel: panFallback ? 'Try my PAN again' : 'I have a PAN',
+      fName: s.fName, fDob: s.fDob, onFName: field('fName'), onFDob: field('fDob'), maxDob: maxDob,
+      underAge: noPan && dobOk && !adult,
+      consentAria: s.consent ? 'true' : 'false',
+      consentBg: s.consent ? '#8A6A12' : '#FFFFFF', consentBd: s.consent ? '#8A6A12' : '#8C8372',
+      consentText: noPan
+        ? 'I allow the lender to check my details and credit record to process this loan.'
+        : 'I allow the lender to check my PAN and credit record to process this loan.',
+      toggleConsent: function () { self.setState({ consent: !s.consent }); },
+      checkRows: [{ t: panFallback ? 'Name, date of birth and mobile number' : (noPan ? 'Name and date of birth' : 'PAN') }, { t: 'Credit record' }, { t: 'Regulatory checks' }],
+      clearTitle: panFallback ? 'Initial checks done' : (noPan ? 'Details checked' : 'PAN verified'),
+      clearSub: noPan ? (panFallback ? 'Bring your PAN card. We’ll complete the credit check with it at the visit, before the loan is paid.' : 'Bring a filled Form 60 to the visit.') : 'Name on PAN: ' + maskedName,
+      showChangeId: !panOnFile,
+      changeIdLabel: noPan ? 'Change details' : 'Not you? Change PAN',
+      changeId: function () { self.setState({ vStage: 'form', verified: false }); },
+      clearNext: 'All set. You can now pick a time for your visit.',
+      maskedName: maskedName,
+      vShowReason: vStage === 'form' && vReason !== '',
+      vReason: vReason, vBtnLabel: vLabel, vAction: vAct, vCant: !vReady,
+      vBtnBg: vReady ? '#F2C66D' : '#E9E1CF', vBtnFg: vReady ? '#1F1A12' : '#6B6253',
+      heldTitle: s.held === 'wd' ? 'We can’t offer you a loan' : (s.held === 'pep' ? 'One more check before your visit' : 'We’ll call you first'),
+      heldText: s.held === 'wd'
+        ? 'Your credit report shows that a lender has classified you as a wilful defaulter. RBI rules don’t allow new loans in that case. If you think this is wrong, contact that lender or raise a dispute with the credit bureau.'
+        : (s.held === 'pep'
+          ? 'Our team needs to complete an extra check before we can book your visit. We’ll call you on +91 ' + phoneShown + ' to ask about your source of income.'
+          : 'We need to confirm a few details before we can book your visit. Our team will call you on +91 ' + phoneShown + '.'),
+      heldIdLabel: s.held === 'wd' ? 'Reference ID' : 'Request ID',
+      heldShowSaved: s.held !== 'wd',
+      canSwitch: !propLoggedIn,
+      familyText: propLoggedIn
+        ? 'Booking for a family member? The loan must be in their name. Request a call and our team will help.'
+        : 'Booking for a family member? The loan must be in their name. Log in with their mobile number, or request a call and our team will help.',
+      switchNumber: function () {
+        self.setState({ authed: false, step: 'login', next: 'verify', otpStage: 'phone', phone: '', otp: '', vStage: 'form', verified: false, held: false, pan: '', panError: false, consent: false, noPan: false, panFallback: false, fName: '', fDob: '' });
+      },
+      loginFamily: gated && s.next !== 'call',
+      keepList: keepList,
+      footerText: gated
+        ? 'Concept prototype by Gaurav Kumar · simulated data · not affiliated with any lender'
+        : 'Concept prototype by Gaurav Kumar · simulated data · not affiliated with any lender',
+      items: itemViews,
+      manifest: manifest,
+      calcRows: calcRows, priceDate: priceDate, priceText: this.inr(rate) + '/g', ltvNote: ltvNote,
+      addItem: function () {
+        if (cantAdd) return;
+        var k = s.nextKey;
+        self.setState({ items: items.concat([{ key: k, form: 'jewel', purity: '', grams: '', goldOnly: false }]), openKey: k, nextKey: k + 1 });
+      },
+      cantAdd: cantAdd, addBd: cantAdd ? '#DDD3C0' : '#8A6A12', addFg: cantAdd ? '#8C8372' : '#8A6A12',
+      coinCapNote: coinTotal > 50,
+      showNumber: showNumber, borrowLabel: valid ? 'You could borrow' : 'So far, you could borrow',
+      valid: valid, invalid: !valid, invalidMsg: invalidMsg,
+      isLogin: isLoginStep,
+      isPhoneStage: s.otpStage === 'phone', isOtpStage: s.otpStage === 'code',
+      isPhoneStageLogin: isLoginStep && s.otpStage === 'phone', isOtpStageLogin: isLoginStep && s.otpStage === 'code',
+      loginIntro: s.next === 'call' ? 'Log in with your mobile number so we can call you back.' : 'Log in with your mobile number to book your free doorstep visit.',
+      phone: s.phone, otp: s.otp, phoneShown: phoneShown,
+      phoneInvalid: !phoneOk, otpInvalid: !otpOk,
+      otpBtnBg: phoneOk ? '#F2C66D' : '#E9E1CF', otpBtnFg: phoneOk ? '#1F1A12' : '#6B6253',
+      verifyBtnBg: otpOk ? '#F2C66D' : '#E9E1CF', verifyBtnFg: otpOk ? '#1F1A12' : '#6B6253',
+      onPhone: field('phone'), onOtp: field('otp'),
+      sendOtp: function () { if (phoneOk) self.setState({ otpStage: 'code', otp: '' }); },
+      changePhone: function () { self.setState({ otpStage: 'phone', otp: '' }); },
+      verifyOtp: function () { if (otpOk) self.setState({ authed: true, step: s.next || 'book' }); },
+      estBtnBg: valid ? '#F2C66D' : '#E9E1CF', estBtnFg: valid ? '#1F1A12' : '#6B6253',
+      callBd: valid ? '#8A6A12' : '#8C8372', callFg: valid ? '#8A6A12' : '#6B6253',
+      showWhy: s.showWhy, whyAria: s.showWhy ? 'true' : 'false', chevRot: s.showWhy ? '180deg' : '0deg',
+      valueText: this.rng(vLo, vHi, 'round'),
+      loanText: this.rng(lo, hi, 'floor'),
+      interestFrom: this.hundreds(lo * r),
+      bookReason: bookReason,
+      addrReason: addrReason,
+      addrPin: addrPin, addrServed: addrServed, addrNotServed: addrNotServed,
+      ltvPct: String(ltvPct),
+      summary: summary,
+      ratePctText: String(ratePct) + '%',
+      interestText: (Math.floor(lo * r / 100) === Math.floor(hi * r / 100)) ? this.hundreds(hi * r) : this.hundreds(lo * r) + ' – ' + this.hundreds(hi * r),
+      over25: valid && hi > 250000,
+      factors: factors,
+      pin: s.pin,
+      pinServed: pinOk && serviceable,
+      pinNotServed: pinOk && !serviceable,
+      pinIncomplete: !pinOk,
+      dayOpts: dayOpts, slotOpts: slotOpts,
+      customDay: s.day === 'custom', customSlot: s.slot === 'custom', noSlotsToday: noSlotsToday,
+      customDate: s.customDate, customTime: s.customTime, minDate: minDate,
+      customTimeHelp: customHelp,
+      cantBook: cantBook,
+      bookBtnBg: cantBook ? '#E9E1CF' : '#F2C66D', bookBtnFg: cantBook ? '#6B6253' : '#1F1A12',
+      dayLabel: dayLabel, slotLabel: slotLabel,
+      hasSaved: hasSaved, noSaved: !hasSaved,
+      orText: hasSaved ? 'or use a different address' : 'Add your pickup address',
+      savedText: savedText, savedBg: sv.bg, savedBd: sv.bd, savedPressed: sv.pressed, savedDot: addrMode === 'saved' ? '#8A6A12' : 'transparent',
+      locBg: lc.bg, locBd: lc.bd, locPressed: lc.pressed,
+      manBg: mc.bg, manBd: mc.bd, manPressed: mc.pressed,
+      isLocated: addrMode === 'located', isManual: addrMode === 'manual', denied: s.denied,
+      detectedText: detectedText,
+      locHouse: s.locHouse, locLandmark: s.locLandmark,
+      mHouse: s.mHouse, mArea: s.mArea, mLandmark: s.mLandmark, mCity: s.mCity, mPin: s.mPin,
+      showPerm: s.showPerm,
+      noAddr: !addrValid,
+      addrBtnBg: addrValid ? '#F2C66D' : '#E9E1CF', addrBtnFg: addrValid ? '#1F1A12' : '#6B6253',
+      addressLine: addressLine,
+      refId: s.refId,
+      pinLeft: s.pinX + '%', pinTop: s.pinY + '%',
+      pinConfirmedFlag: s.pinConfirmed, pinNotConfirmed: !s.pinConfirmed,
+      mapTitle: addrMode === 'manual' ? 'Place the pin (map centred on ' + (/^\d{6}$/.test(String(s.mPin).trim()) ? String(s.mPin).trim() : 'your pincode') + ')' : 'Check the pin',
+      movePin: function (e) {
+        if (!e || (e.clientX === 0 && e.clientY === 0)) return;
+        var rect = e.currentTarget.getBoundingClientRect();
+        var x = (e.clientX - rect.left) / rect.width * 100;
+        var y = (e.clientY - rect.top) / rect.height * 100;
+        x = Math.max(6, Math.min(94, x));
+        y = Math.max(22, Math.min(96, y));
+        self.setState({ pinX: Math.round(x), pinY: Math.round(y), pinConfirmed: false });
+      },
+      confirmPin: function () { self.setState({ pinConfirmed: true }); },
+      altOn: s.altOn, altAria: s.altOn ? 'true' : 'false', altTrack: s.altOn ? '#8A6A12' : '#8C8372', altKnob: s.altOn ? '21px' : '3px',
+      altName: s.altName, altPhone: s.altPhone, altLine: String(s.altName).trim() + ', ' + s.altPhone,
+      onAltName: field('altName'), onAltPhone: field('altPhone'),
+      toggleAlt: function () { self.setState({ altOn: !s.altOn }); },
+      onPin: field('pin'),
+      onDate: field('customDate'), onTime: field('customTime'),
+      onLocHouse: field('locHouse'), onLocLandmark: field('locLandmark'),
+      onMHouse: field('mHouse'), onMArea: field('mArea'), onMLandmark: field('mLandmark'), onMCity: field('mCity'), onMPin: field('mPin'),
+      toggleWhy: function () { self.setState({ showWhy: !s.showWhy }); },
+      pickSaved: function () { self.setState({ addrMode: 'saved' }); },
+      askLocation: function () {
+        if (s.locGranted) self.setState({ addrMode: 'located' });
+        else self.setState({ showPerm: true });
+      },
+      allowLoc: function () { self.setState({ showPerm: false, locGranted: true, denied: false, addrMode: 'located', pinX: 50, pinY: 55, pinConfirmed: false }); },
+      denyLoc: function () { self.setState({ showPerm: false, denied: true, addrMode: 'manual', mPin: s.mPin, pinX: 50, pinY: 55, pinConfirmed: false }); },
+      goManual: function () { self.setState({ addrMode: 'manual', denied: false, mPin: s.mPin, pinX: 50, pinY: 55, pinConfirmed: false }); },
+      toEst: function () { self.setState({ step: 'est' }); },
+      toDetails: function () { if (valid) self.setState({ step: 'details' }); },
+      toBook: function () { proceed('book'); },
+      toCall: function () { proceed('call'); },
+      toAddr: function () { if (!cantBook) self.setState({ step: 'addr' }); },
+      toDone: function () { if (addrValid) self.setState({ step: 'done' }); },
+      restart: function () { self.setState({ step: 'est', items: [{ key: s.nextKey, form: 'jewel', purity: '', grams: '', goldOnly: false }], openKey: s.nextKey, nextKey: s.nextKey + 1, day: '', slot: '', customDate: '', customTime: '', addrMode: 'none', showPerm: false, denied: false,
+        vStage: 'form', verified: false, held: false, pan: '', panError: false, consent: false, noPan: false, panFallback: false, fName: '', fDob: '' }); },
+      back: function () {
+        if (s.showPerm) { self.setState({ showPerm: false }); return; }
+        var prev = { est: 'est', details: 'est', login: s.from || 'est', call: s.from || 'est', verify: s.from || 'est', held: s.from || 'est', book: gated ? 'verify' : (s.from || 'est'), addr: 'book', done: 'addr' };
+        var patch = { step: prev[s.step] };
+        if (s.step === 'verify' && s.vStage === 'checking') patch.vStage = 'form';
+        self.setState(patch);
+      }
+    };
+  }
+}
+(function () {
+  var select = document.getElementById('demo-result');
+  var app = DCMount(Component, document.getElementById('estimator-template'), document.getElementById('app'), {
+    journey: 'Verify first',
+    screening: select.value
+  });
+  select.addEventListener('change', function () {
+    var comp = app.component;
+    var s = comp.state;
+    var back = (s.step === 'held' || s.step === 'book' || s.step === 'addr') && s.authed;
+    comp.props.screening = select.value;
+    comp.setState({
+      held: false, verified: false, vStage: 'form', panError: false,
+      step: back ? 'verify' : s.step
+    });
+  });
+})();
+</script>
+</body>
+</html>
